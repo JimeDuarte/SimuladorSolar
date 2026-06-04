@@ -4,6 +4,8 @@ import numpy as np
 import pvlib
 from pvlib import irradiance
 from pvlib.location import Location
+import folium
+from streamlit_folium import st_folium
 
 # -----------------------------------------------------------------------
 # CONFIGURACIÓN INTERFAZ
@@ -165,15 +167,21 @@ con una demanda eléctrica aproximada.
 # CIUDADES
 
 ciudades = {
-    "Monterrey": [25.6866, -100.3161, 512, "America/Monterrey"],
-    "CDMX": [19.4326, -99.1332, 2240, "America/Mexico_City"],
-    "Guadalajara": [20.6597, -103.3496, 1566, "America/Mexico_City"],
-    "Querétaro": [20.5888, -100.3899, 1820, "America/Mexico_City"],
-    "Mérida": [20.9674, -89.5926, 10, "America/Merida"],
-    "Tijuana": [32.5149, -117.0382, 20, "America/Tijuana"],
-    "Cancún": [21.1619, -86.8515, 10, "America/Cancun"]
+    "Monterrey, México": [25.6866, -100.3161, 512, "America/Monterrey"],
+    "CDMX, México": [19.4326, -99.1332, 2240, "America/Mexico_City"],
+    "Guadalajara, México": [20.6597, -103.3496, 1566, "America/Mexico_City"],
+    "Cancún, México": [21.1619, -86.8515, 10, "America/Cancun"],
+    "Madrid, España": [40.4168, -3.7038, 667, "Europe/Madrid"],
+    "Buenos Aires, Argentina": [-34.6037, -58.3816, 25, "America/Argentina/Buenos_Aires"],
+    "Santiago, Chile": [-33.4489, -70.6693, 570, "America/Santiago"],
+    "Bogotá, Colombia": [4.7110, -74.0721, 2640, "America/Bogota"],
+    "Lima, Perú": [-12.0464, -77.0428, 154, "America/Lima"],
+    "Nueva York, EUA": [40.7128, -74.0060, 10, "America/New_York"],
+    "Tokio, Japón": [35.6762, 139.6503, 40, "Asia/Tokyo"],
+    "Sídney, Australia": [-33.8688, 151.2093, 58, "Australia/Sydney"]
 }
 
+# -----------------------------------------------------------------------
 # -----------------------------------------------------------------------
 # CONDICIONES INICIALES
 
@@ -185,72 +193,196 @@ tab1, tab2, tab3 = st.tabs([
     "📅 Fechas"
 ])
 
-with tab1:
-    col1, col2 = st.columns(2)
+# -----------------------------------------------------------------------
+# UBICACIÓN
 
-    with col1:
-        modo_ubicacion = st.selectbox(
-            "Forma de elegir ubicación",
-            ["Ciudad predefinida", "Ubicación personalizada"]
+with tab1:
+
+    modo_ubicacion = st.selectbox(
+        "Forma de elegir ubicación",
+        [
+            "Ciudad predefinida",
+            "Coordenadas manuales",
+            "Elegir punto en mapa"
+        ]
+    )
+
+    # CIUDAD PREDEFINIDA
+
+    if modo_ubicacion == "Ciudad predefinida":
+
+        ciudad = st.selectbox(
+            "Ciudad",
+            list(ciudades.keys())
         )
 
-    with col2:
-        if modo_ubicacion == "Ciudad predefinida":
-            ciudad = st.selectbox("Ciudad", list(ciudades.keys()))
-            latitud, longitud, altitud, zona_horaria = ciudades[ciudad]
-        else:
-            ciudad = st.text_input("Nombre de la ubicación", "Ubicación personalizada")
+        latitud, longitud, altitud, zona_horaria = ciudades[ciudad]
 
-    if modo_ubicacion == "Ubicación personalizada":
-        col3, col4, col5, col6 = st.columns(4)
+        st.success(
+            f"Ubicación seleccionada: {ciudad}"
+        )
 
-        with col3:
-            latitud = st.number_input("Latitud", value=25.6866, format="%.6f")
 
-        with col4:
-            longitud = st.number_input("Longitud", value=-100.3161, format="%.6f")
+    # COORDENADAS MANUALES
 
-        with col5:
-            altitud = st.number_input("Altitud (m)", value=512)
+    elif modo_ubicacion == "Coordenadas manuales":
 
-        with col6:
-            zona_horaria = st.selectbox(
-                "Zona horaria",
-                [
-                    "America/Monterrey",
-                    "America/Mexico_City",
-                    "America/Tijuana",
-                    "America/Cancun",
-                    "America/Merida"
-                ]
+        ciudad = st.text_input(
+            "Nombre de la ubicación",
+            "Ubicación personalizada"
+        )
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            latitud = st.number_input(
+                "Latitud",
+                value=25.6866,
+                format="%.6f"
             )
 
-with tab2:
-    col1, col2, col3 = st.columns(3)
+        with col2:
+            longitud = st.number_input(
+                "Longitud",
+                value=-100.3161,
+                format="%.6f"
+            )
 
-    with col1:
-        numero_paneles = st.slider("Número de paneles", 1, 1000, 200)
+        with col3:
+            altitud = st.number_input(
+                "Altitud aproximada (m)",
+                value=512
+            )
 
-    with col2:
-        kw_max = st.number_input("Demanda máxima estimada (kW)", value=50.0)
+        zona_horaria = "UTC"
 
-    with col3:
-        tipo_consumo = st.selectbox(
-            "Tipo de consumo",
-            ["Industrial continuo", "Comercial", "Residencial"]
+        st.info(
+            "Modo mundial simplificado. Se utiliza UTC automáticamente."
         )
 
-with tab3:
+    # MAPA
+
+    else:
+
+        ciudad = "Punto seleccionado en mapa"
+
+        zona_horaria = "UTC"
+
+        if "lat_mapa" not in st.session_state:
+            st.session_state.lat_mapa = 25.6866
+
+        if "lon_mapa" not in st.session_state:
+            st.session_state.lon_mapa = -100.3161
+
+        mapa = folium.Map(
+            location=[
+                st.session_state.lat_mapa,
+                st.session_state.lon_mapa
+            ],
+            zoom_start=4
+        )
+
+        resultado = st_folium(
+            mapa,
+            width=1000,
+            height=450
+        )
+
+        if (
+            resultado is not None
+            and resultado.get("last_clicked") is not None
+        ):
+
+            st.session_state.lat_mapa = (
+                resultado["last_clicked"]["lat"]
+            )
+
+            st.session_state.lon_mapa = (
+                resultado["last_clicked"]["lng"]
+            )
+
+        latitud = st.session_state.lat_mapa
+        longitud = st.session_state.lon_mapa
+
+        altitud = 0
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric(
+                "Latitud",
+                f"{latitud:.6f}"
+            )
+
+        with col2:
+            st.metric(
+                "Longitud",
+                f"{longitud:.6f}"
+            )
+
+        st.info(
+            "Haz clic en cualquier parte del mundo para seleccionar una ubicación."
+        )
+
+# SISTEMA Y DEMANDA
+
+with tab2:
+
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        start_date = st.date_input("Fecha inicial", value=pd.to_datetime("2025-01-01"))
+
+        numero_paneles = st.slider(
+            "Número de paneles",
+            1,
+            1000,
+            200
+        )
 
     with col2:
-        end_date = st.date_input("Fecha final", value=pd.to_datetime("2025-12-31"))
+
+        kw_max = st.number_input(
+            "Demanda máxima estimada (kW)",
+            value=50.0
+        )
 
     with col3:
-        dia_plot = st.date_input("Día a graficar", value=pd.to_datetime("2025-01-15"))
+
+        tipo_consumo = st.selectbox(
+            "Tipo de consumo",
+            [
+                "Industrial continuo",
+                "Comercial",
+                "Residencial"
+            ]
+        )
+
+# FECHAS
+
+with tab3:
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        start_date = st.date_input(
+            "Fecha inicial",
+            value=pd.to_datetime("2025-01-01")
+        )
+
+    with col2:
+
+        end_date = st.date_input(
+            "Fecha final",
+            value=pd.to_datetime("2025-12-31")
+        )
+
+    with col3:
+
+        dia_plot = st.date_input(
+            "Día a graficar",
+            value=pd.to_datetime("2025-01-15")
+        )
 
 # -----------------------------------------------------------------------
 # VALORES AUTOMÁTICOS
