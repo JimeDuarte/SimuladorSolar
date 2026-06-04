@@ -223,8 +223,6 @@ with tab1:
         value=0
     )
 
-
-
     # COORDENADAS MANUALES
 
     elif modo_ubicacion == "Coordenadas manuales":
