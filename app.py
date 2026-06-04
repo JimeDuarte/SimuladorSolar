@@ -218,9 +218,11 @@ with tab1:
 
         latitud, longitud, altitud, zona_horaria = ciudades[ciudad]
 
-        st.success(
-            f"Ubicación seleccionada: {ciudad}"
-        )
+        altitud = st.number_input(
+        "Altitud aproximada (m)",
+        value=0
+    )
+
 
 
     # COORDENADAS MANUALES
@@ -255,10 +257,6 @@ with tab1:
             )
 
         zona_horaria = "UTC"
-
-        st.info(
-            "Modo mundial simplificado. Se utiliza UTC automáticamente."
-        )
 
     # MAPA
 
