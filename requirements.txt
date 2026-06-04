@@ -3,3 +3,5 @@ pandas
 numpy
 pvlib
 matplotlib
+folium
+streamlit-folium
