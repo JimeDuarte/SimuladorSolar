@@ -6,7 +6,7 @@ from pvlib import irradiance
 from pvlib.location import Location
 
 # -----------------------------------------------------------------------
-# CONFIGURACIÓN GENERAL
+# CONFIGURACIÓN INTERFAZ
 
 st.set_page_config(
     page_title="Simulador Solar",
@@ -283,7 +283,6 @@ with st.expander("⚙️ Ajustes avanzados del modelo"):
 
     st.markdown("""
     Aquí se pueden modificar supuestos técnicos del sistema.  
-    Si no estás segura, puedes dejar los valores por defecto.
     """)
 
     st.markdown("### Panel solar")
