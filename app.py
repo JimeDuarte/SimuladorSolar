@@ -157,8 +157,7 @@ st.title("☀️ Simulador de Generación Solar Fotovoltaica")
 st.markdown("""
 <div class="cajita">
 Este simulador estima la energía generada por un sistema fotovoltaico y la compara
-con una demanda eléctrica aproximada. En modo básico solo se piden los datos principales;
-los parámetros técnicos se pueden ajustar en la sección avanzada.
+con una demanda eléctrica aproximada. 
 </div>
 """, unsafe_allow_html=True)
 
@@ -300,7 +299,7 @@ with st.expander("⚙️ Ajustes avanzados del modelo"):
         kw_panel_unitario = st.number_input(
             "Potencia nominal por panel (kW)",
             value=kw_panel_unitario,
-            help="Potencia máxima teórica de cada panel. 0.6 kW equivale a 600 W."
+            help="Potencia máxima teórica de cada panel."
         )
 
     with col3:
